@@ -44,3 +44,24 @@
 
 (let [[a b] (str/split input #"\n")]
   (solve a b))
+
+(defn wire-distance [pos positions]
+  (let [l (count (take-while #(not= pos %) positions))]
+    (if (= l (count positions))
+      (Integer/MAX_VALUE)
+      (inc l))))
+
+(defn solve2 [wire1 wire2]
+  (let [pos1 (follow-wire wire1)
+        pos2 (follow-wire wire2)
+        intersections (set/intersection (set pos1) (set pos2))]
+    (->> intersections
+         (map (fn [i] (+ (wire-distance i pos1) (wire-distance i pos2))))
+         (reduce min))))
+
+(assert (= 30 (solve2 "R8,U5,L5,D3" "U7,R6,D4,L4")))
+(assert (= 610 (solve2 "R75,D30,R83,U83,L12,D49,R71,U7,L72" "U62,R66,U55,R34,D71,R55,D58,R83")))
+(assert (= 410 (solve2 "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51" "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7")))
+
+(let [[a b] (str/split input #"\n")]
+  (solve2 a b))
