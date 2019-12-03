@@ -18,13 +18,13 @@
   (let [movements (move pos movement)]
     (-> acc
         (assoc :pos (last movements))
-        (update :movements set/union (set movements)))))
+        (update :positions concat movements))))
 
 (defn follow-wire [wire]
   (->> (str/split wire #",")
        (map parse-move)
-       (reduce reducer { :pos [0 0] :movements #{} })
-       :movements))
+       (reduce reducer { :pos [0 0] :positions '() })
+       :positions))
 
 (defn manhattan-distance [a b]
   "d = |xa - xb| + |ya - yb| + |za - zb|"
@@ -32,8 +32,8 @@
     (reduce + (map abs-sub a b))))
 
 (defn solve [wire1 wire2]
-  (let [pos1 (follow-wire wire1)
-        pos2 (follow-wire wire2)]
+  (let [pos1 (set (follow-wire wire1))
+        pos2 (set (follow-wire wire2))]
     (->> (set/intersection pos1 pos2)
          (map (partial manhattan-distance [0 0]))
          (reduce min))))
