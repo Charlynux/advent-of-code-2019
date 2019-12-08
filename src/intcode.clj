@@ -58,6 +58,7 @@
   (parse-instruction {:index 0 :values [1002,4,3,4,33]})
   (parse-instruction {:index 0 :values [1,9,10,3,2,3,11,0,99,30,40,50]}))
 
+(def proceed nil)
 (defmulti proceed (fn [opcode & args] opcode))
 (defmethod proceed 1 [_ params writes program]
   (-> program
@@ -70,18 +71,16 @@
                                          (apply * params))))
       (update :index (partial + 4))))
 (defmethod proceed 3 [_ _ writes program]
-  (-> program
-      (update :values (fn [values] (assoc values (nth writes 0)
-                                         (-> program :inputs first))))
-      (update :inputs rest)
-      (update :index (partial + 2))))
+  (if-let [input (-> program :inputs first)]
+    (-> program
+        (update :values (fn [values] (assoc values (nth writes 0)
+                                           input)))
+        (update :inputs rest)
+        (update :index (partial + 2)))
+    (assoc program :halted :waiting)))
 (defmethod proceed 4 [_ params _ program]
   (-> program
       (update :outputs #(conj % (nth params 0)))
-      (update :index (partial + 2))))
-(defmethod proceed 4 [_ params _ program]
-  (println "out>" (nth params 0))
-  (-> program
       (update :index (partial + 2))))
 (defmethod proceed 5 [_ params _ {:keys [index] :as program}]
   (let [next-index (if (zero? (nth params 0)) (+ index 3) (nth params 1))]
@@ -101,12 +100,15 @@
       (update :values (fn [values] (assoc values (nth writes 0)
                                          (if (apply = params) 1 0))))
       (update :index (partial + 4))))
+(defmethod proceed 99 [_ _ _ program]
+  (assoc program :halted :finish))
 
 (defn run [program]
-  (let [[opcode params writes] (parse-instruction program)]
-    (if (= 99 opcode)
-      program
-      (recur (proceed opcode params writes program)))))
+  (let [[opcode params writes] (parse-instruction program)
+        result (proceed opcode params writes program)]
+    (if (:halted result)
+      result
+      (recur result))))
 
 (s/fdef run
   :args (s/cat :program ::program)
@@ -115,6 +117,14 @@
 
 (comment
   (stest/instrument `run))
+
+(defn init-program [program]
+  {
+   :index 0
+   :inputs []
+   :outputs []
+   :values program
+   })
 
 (defn execute
   ([program] (execute program []))
