@@ -39,6 +39,11 @@
          (map #(first (drop-while #{2} %)))
          (partition width))))
 
-(clojure.pprint/pprint (solve2 2 2 "0222112222120000"))
+(defn print-message [message]
+  (doseq [row message]
+    (doseq [pixel row] (print (if (zero? pixel) " " "X")))
+    (println)))
 
-(clojure.pprint/pprint (solve2 25 6 (slurp "day08/input")))
+(print-message (solve2 2 2 "0222112222120000"))
+
+(print-message (solve2 25 6 (slurp "day08/input")))
