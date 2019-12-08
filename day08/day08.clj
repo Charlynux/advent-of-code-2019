@@ -23,3 +23,22 @@
      (sort-by #(get % 0 0))
      first
      ((fn [freqs] (* (get freqs 1) (get freqs 2)))))
+
+;; 0 is black, 1 is white, and 2 is transparent
+;; first layer in front and the last layer in back
+;; 2 2 0 1 -> 0
+(def ->char { 0 " " 1 "X"})
+(defn solve2 [width height input]
+  (let [digits (parse-input input)
+        layer-size (* width height)
+        n-layers (quot (count digits) layer-size)]
+    (->> digits
+         (partition layer-size)
+         (apply interleave)
+         (partition n-layers)
+         (map #(first (drop-while #{2} %)))
+         (partition width))))
+
+(clojure.pprint/pprint (solve2 2 2 "0222112222120000"))
+
+(clojure.pprint/pprint (solve2 25 6 (slurp "day08/input")))
