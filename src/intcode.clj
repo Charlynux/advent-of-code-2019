@@ -2,7 +2,7 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.test.alpha :as stest]))
 
-(s/def ::index (s/or zero? pos-int?))
+(s/def ::index nat-int?)
 (s/def ::inputs (s/coll-of int?))
 (s/def ::values (s/coll-of int?))
 (s/def ::program (s/keys :req-un [::index ::inputs ::values]))
@@ -128,23 +128,16 @@
 
 (defn execute
   ([program] (execute program []))
-  ([program inputs] (run {
-                          :index 0
-                          :inputs inputs
-                          :outputs []
-                          :values program
-                          })))
+  ([program input] (run {
+                         :index 0
+                         :inputs [input]
+                         :outputs []
+                         :values program
+                         })))
+
+(defn read-input-file [file] (read-string (str "[" (slurp file) "]")))
 
 (comment
-  (assert (= 3500 (-> (execute [1,9,10,3,2,3,11,0,99,30,40,50]) :values first)))
-  (assert (= 1002 (execute [1002,4,3,4,33])))
-  (assert (= 1101 (execute [1101,100,-1,4,0])))
-
-  (defn read-input [file] (read-string (str "[" (slurp file) "]")))
-  (assert (= 3654868 (-> (read-input "day02/input") (assoc 1 12 2 2) execute)))
-  (assert (= 19690720 (-> (read-input "day02/input") (assoc 1 70 2 14) execute)))
-
-  (assert (= 0 (-> (execute [3,9,8,9,10,9,4,9,99,-1,8] [1]) :outputs last)))
   (assert (= 1 (-> (execute [3,9,8,9,10,9,4,9,99,-1,8] [8]) :outputs last)))
   (-> (read-input "day05/input") (execute [1]))
   )
