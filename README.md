@@ -4,7 +4,7 @@
 - Day 3 - Parcours de "matrice"
 - Day 4 - Manipulation "entier -> chaîne de caractères"
 - Day 6 - Parcours d'arbre
-- Day 8
+- Day 8 - Liste -> Matrice + Manipulation
 - Day 9
 - Day 10
 
