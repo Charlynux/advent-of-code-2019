@@ -10,27 +10,120 @@
    (filter some?)
    (into #{})))
 
+(defn square [n] (* n n))
+
+(defn gcd
+  [a b]
+  (if (zero? b)
+    a
+    (recur b (mod a b))))
+
+(defn direction [start position]
+  (let [rel-pos (mapv - position start)
+        g (Math/abs (apply gcd rel-pos))]
+    (if (zero? g)
+      rel-pos
+      (mapv #(/ % g) rel-pos))))
+
+(defn distance [[Ax Ay] [Cx Cy]]
+  (Math/sqrt (+ (square (- Ax Cx)) (square (- Ay Cy)))))
+
+(comment
+  (direction [0 1] [1 2])
+  (distance [0 1] [1 2])
+
+  (direction [0 1] [2 3])
+  (distance [0 1] [2 3])
+
+  )
+
+[(direction [2 2] [1 2]) (direction [2 2] [3 2])]
+
+.7..7
+.....
+67775
+....7
+...87
+
+(defn count-asteroids [nodes]
+  (let [->directions (fn [node] (map (partial direction node) nodes))]
+    (map (juxt identity (comp dec count set ->directions)) nodes)))
+
+(defn solve [input]
+  (->> input
+       parse-input
+       count-asteroids
+       (map second)
+       (reduce max)))
+
+
 (comment
   (parse-input ".#..#
 .....
 #####
 ....#
-...##"))
+...##")
 
-(let [a (Math/toRadians 90)] [(Math/cos a) (Math/sin a)])
+  (solve ".#..#
+.....
+#####
+....#
+...##")
 
-(Math/asin 0)
-(Math/acos 0)
+  (solve "......#.#.
+#..#.#....
+..#######.
+.#.#.###..
+.#..#.....
+..#....#.#
+#..#....#.
+.##.#..###
+##...#..#.
+.#....####")
 
-(defn square [n] (* n n))
+  (solve "#.#...#.#.
+.###....#.
+.#....#...
+##.#.#.#.#
+....#.#.#.
+.##..###.#
+..#...##..
+..##....##
+......#...
+.####.###.")
 
-(defn calc [[Ax Ay] [Cx Cy]]
-  (Math/toDegrees
-   (let [[Bx By] [(inc Ax) Ay]
-         a (Math/sqrt  (+ (square (- Bx Cx)) (square (- By Cy))))
-         b (Math/sqrt  (+ (square (- Ax Cx)) (square (- Ay Cy))))
-         c (Math/sqrt  (+ (square (- Bx Ax)) (square (- By Ay))))]
-     (Math/acos (/ (- (+ (square b) (square c)) (square a)) (* 2 b c))))))
+  (solve ".#..#..###
+####.###.#
+....###.#.
+..###.##.#
+##.##.#.#.
+....###..#
+..#.#..#.#
+#..#.#.###
+.##...##.#
+.....#.#..")
 
-(calc [0 0] [0 1])
-(calc [0 0] [0 -1])
+  (solve ".#..##.###...#######
+##.############..##.
+.#.######.########.#
+.###.#######.####.#.
+#####.##.#.##.###.##
+..#####..#.#########
+####################
+#.####....###.#.#.##
+##.#################
+#####.##.###..####..
+..######..##.#######
+####.##.####...##..#
+.#####..#.######.###
+##...#.##########...
+#.##########.#######
+.####.#.###.###.#.##
+....##.##.###..#####
+.#.#.###########.###
+#.#.#.#####.####.###
+###.##.####.##.#..##")
+
+  )
+
+(solve (slurp "day10/input"))
