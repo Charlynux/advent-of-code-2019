@@ -43,9 +43,9 @@
 
 (comment (update-state {:position [0 0] :direction [1 0]} 1 0))
 
-(defn painting-robot [input]
+(defn painting-robot [input start-color]
   (let [program (intcode/init-program input)]
-    (loop [state { :position [0 0] :direction [1 0] :panels {} }
+    (loop [state { :position [0 0] :direction [1 0] :panels { [0 0] start-color } }
            program program]
       (let [new-program (intcode/run (dissoc (assoc program :inputs [(read-panel state)] :outputs []) :halted))
             color (get-in new-program [:outputs 0])
@@ -55,12 +55,32 @@
           (recur new-state new-program)
           {:state new-state :program new-program})))))
 
-
 (defn solve [input]
   (-> input
-      painting-robot
+      (painting-robot 0)
       (get-in [:state :panels])
       count))
 
 (solve input)
 ;; 2018
+
+(defn print-panels [panels]
+  (let [coords (keys panels)
+        minX (reduce min (map first coords))
+        maxX (reduce max (map first coords))
+        minY(reduce min (map second coords))
+        maxY (reduce max (map second coords))]
+    (doseq [x (range maxX (dec minX) -1)]
+      (doseq [y (range minY (inc maxY))]
+        (print (if (zero? (get panels [x y] 0)) " " "#")))
+      (println ""))))
+
+(defn solve2 [input]
+  (-> input
+      (painting-robot 1)
+      :state
+      :panels
+      print-panels))
+
+(solve2 input)
+;; APFKRKBR
