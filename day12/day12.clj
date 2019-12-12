@@ -65,3 +65,16 @@
        (reduce + 0)))
 
 (solve moons)
+
+
+(defn solve2 [moons]
+  (->> moons
+       init-moons
+       (iterate iteration)
+       (reduce (fn [acc val] (let [h (hash val)]
+                              (if (acc h) (reduced acc) (conj acc h)))) #{})
+       count))
+
+(solve2 test-moons)
+(solve2 [[-8 -10 0] [5 5 10] [2 -7 3] [9 -8 -3]])
+(solve2 moons) ;; your answer is too low | 118921
