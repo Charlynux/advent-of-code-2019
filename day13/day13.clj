@@ -20,7 +20,7 @@
       (println ""))))
 
 (defn predict-future [[pX pY] [cX cY] [targetX targetY]]
-  (println pX pY cX cY targetX targetY)
+  #_(println pX pY cX cY targetX targetY)
   (if (< pY cY)
     (let [deltaY (- targetY cY 1)
           direction (if (< pX cX) + -)
@@ -29,7 +29,7 @@
         (zero? deltaX) 0
         (pos? deltaX) +1
         (neg? deltaX) -1))
-    0))
+    (if (< pX cX) +1 -1)))
 
 (defn round [program]
   (let [tiles (->> program :outputs (partition 3) (map (fn [[x y tile]] [tile [x y]])) (into {}))
@@ -37,6 +37,7 @@
         ball-pos (get tiles 4)
         pad-pos (get tiles 3)
         movement (predict-future prev-ball-pos ball-pos pad-pos)]
+    #_(println "> " movement)
     (-> program
         (dissoc :halted)
         (assoc :inputs [movement])
@@ -44,7 +45,7 @@
         (assoc :prev-ball ball-pos))))
 
 (println "##############         RESET     #####################")
-(map print-game (map :outputs (take 10 (iterate round (intcode/run (intcode/init-program (assoc input 0 2)))))))
+(map print-game (map :outputs (drop 4990 (take 5000 (iterate round (intcode/run (intcode/init-program (assoc input 0 2))))))))
 
 
 (predict-future [0 0] [18 18] [19 19])
