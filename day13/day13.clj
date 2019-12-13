@@ -44,8 +44,30 @@
         (intcode/run)
         (assoc :prev-ball ball-pos))))
 
+(defn index-by-position [outputs]
+  (->> outputs (partition 3)
+       ;; Index by position to remove duplicates
+       (map (fn [[x y tile]] [[x y] tile]))
+       (into {})))
+
+(defn blocks? [tiles]
+  (->> tiles
+       (vals)
+       (filter #{2})
+       (count)
+       pos?))
+
 (println "##############         RESET     #####################")
 (map print-game (map :outputs (drop 4990 (take 5000 (iterate round (intcode/run (intcode/init-program (assoc input 0 2))))))))
+
+(defn dot [value] (print ".") value)
+
+(->> (iterate round (intcode/run (intcode/init-program (assoc input 0 2))))
+     #_[{:outputs [0 0 2 -1 0 123]} {:outputs [0 0 2 -1 0 123 0 0 0 -1 0 345]}]
+     (map (comp dot index-by-position :outputs))
+     (drop-while blocks?)
+     first
+     (#(get % [-1 0])))
 
 
 (predict-future [0 0] [18 18] [19 19])
