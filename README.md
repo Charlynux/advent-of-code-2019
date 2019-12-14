@@ -6,11 +6,19 @@
 - Day 6 - Parcours d'arbre
 - Day 8 - Liste -> Matrice + Manipulation
 - Day 10 - Matrice + Trigonométrie ("Difficile")
+- Day 12 - Récursion pour la partie 1. Partie 2, non résolue.
+- Day 14 - Parcours d'arbre "avec des poids"
 
 ## IntCode Computer
+
+### Implémentation du coeur
+
 - Day 2
 - Day 5
 - Day 7
-- Day 9
-- Day 11
+- Day 9 Part 1
 
+### Utilisation uniquement
+- Day 9 Part 2
+- Day 11
+- Day 13
