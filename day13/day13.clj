@@ -30,13 +30,12 @@
    3 "="
    4 "O"
    })
-(defn print-game [outputs]
+(defn print-game [tiles]
   (println "")
-  (let [tiles (->> outputs (partition 3) (map (fn [[x y tile]] [[x y] tile])) (into {}))]
-    (doseq [y (range 21)]
-      (doseq [x (range 40)]
-        (print (->tile (get tiles [x y] 0))))
-      (println ""))))
+  (doseq [y (range 21)]
+    (doseq [x (range 40)]
+      (print (->tile (get tiles [x y] 0))))
+    (println "")))
 
 (defn predict-future [[pX pY] [cX cY] [targetX targetY]]
   #_(println pX pY cX cY targetX targetY)
@@ -51,7 +50,11 @@
     (if (< pX cX) +1 -1)))
 
 (defn round [program]
-  (let [tiles (->> program :outputs (partition 3) (map (fn [[x y tile]] [tile [x y]])) (into {}))
+  (let [board (into (:board program {})
+                    (comp (partition-all 3)
+                          (map (fn [[x y tile]] [[x y] tile])))
+                    (:outputs program))
+        tiles (into {} (for [[coords tile] board] [tile coords]))
         prev-ball-pos (:prev-ball program [0 0])
         ball-pos (get tiles 4)
         pad-pos (get tiles 3)
@@ -59,15 +62,9 @@
     #_(println "> " movement)
     (-> program
         (dissoc :halted)
-        (assoc :inputs [movement])
+        (assoc :inputs [movement] :outputs [])
         (intcode/run)
-        (assoc :prev-ball ball-pos))))
-
-(defn index-by-position [outputs]
-  (->> outputs (partition 3)
-       ;; Index by position to remove duplicates
-       (map (fn [[x y tile]] [[x y] tile]))
-       (into {})))
+        (assoc :prev-ball ball-pos :board board))))
 
 (defn blocks? [tiles]
   (->> tiles
@@ -76,17 +73,11 @@
        (count)
        pos?))
 
-(println "##############         RESET     #####################")
-(map print-game (map :outputs (drop 4990 (take 5000 (iterate round (intcode/run (intcode/init-program (assoc input 0 2))))))))
-
 (defn dot [value] (print ".") value)
 
-(->> (iterate round (intcode/run (intcode/init-program (assoc input 0 2))))
-     #_[{:outputs [0 0 2 -1 0 123]} {:outputs [0 0 2 -1 0 123 0 0 0 -1 0 345]}]
-     (map (comp dot index-by-position :outputs))
-     (drop-while blocks?)
-     first
-     (#(get % [-1 0])))
-
-
-(predict-future [0 0] [18 18] [19 19])
+(time (->> (iterate round (intcode/run (intcode/init-program (assoc input 0 2))))
+           (drop 1)
+           (map (comp dot :board))
+           (drop-while blocks?)
+           first
+           (#(get % [-1 0]))))
