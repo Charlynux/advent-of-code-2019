@@ -93,3 +93,67 @@
                         :priority 0
                         :closed #{[0 0]}}]
         (:path-length (iteration init-state))))
+
+(defn full-exploration [state]
+  (if (empty? (:open state))
+    state
+    (let [node (first (sort-by :priority (vals (:open state))))
+          result (move (:program node) (:movement node))
+          status (get-in result [:outputs 0] ERROR)
+          new-state (-> state
+                        (assoc :path-length (:priority node))
+                        (update :closed conj (:target node))
+                        (update :open dissoc (:target node))
+                        (update :board assoc (:target node) status))]
+      (condp = status
+        HIT_WALL (recur new-state)
+        FOUND (recur (update new-state :open #(merge % (open-neighbors state result node))))
+        OK (recur (update new-state :open #(merge % (open-neighbors state result node))))
+        (throw (ex-info "No output" {:state new-state :program result}))))))
+
+(defn init-a_star [board]
+  (let [by-status (group-by second board)
+        root (ffirst (get by-status FOUND))]
+    {:closed (set (map first (get by-status HIT_WALL)))
+     :open { root { :position root :distance 0 }}
+     :distances '()}))
+
+(defn fillable-neighbors [state {:keys [ position distance] :as node}]
+  (let [create-open (fn [movement]
+                      {:position (apply-movement position movement)
+                       :distance (inc distance)})
+        closed? (fn [node]
+                  (or ((:closed state) (:position node))
+                      (< (get-in state [:open (:position node) :distance] Integer/MAX_VALUE)
+                         (:distance node))))]
+    (into {}
+          (comp
+           (map create-open)
+           (remove closed?)
+           (map (juxt :position identity)))
+          (keys ->movement))))
+
+(fillable-neighbors { :closed #{} } {:position [0 0] :distance 0})
+(fillable-neighbors { :closed #{[0 1]} } {:position [0 0] :distance 0})
+(fillable-neighbors { :closed #{} :open {[1 0] {:position [1 0] :distance 0}} } {:position [0 0] :distance 0})
+
+(defn fill-oxygen [state]
+  (if (empty? (:open state))
+    state
+    (let [node (first (sort-by :distance (vals (:open state))))
+          new-state (-> state
+                        (update :distances conj (:distance node))
+                        (update :closed conj (:position node))
+                        (update :open dissoc (:position node)))]
+      (recur (update new-state
+                     :open #(merge % (fillable-neighbors new-state node)))))))
+
+(time (let [init-state {:open (open-neighbors { :closed #{} }
+                                              (intcode/init-program (intcode/read-input-file "day15/input"))
+                                              {:target [0 0] :priority 0})
+                        :board {}
+                        :priority 0
+                        :closed #{[0 0]}}
+            board (:board (full-exploration init-state))
+            full-state (fill-oxygen (init-a_star board))]
+        (reduce max 0 (:distances full-state))))
