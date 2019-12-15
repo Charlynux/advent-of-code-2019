@@ -8,6 +8,7 @@
 - Day 10 - Matrice + Trigonométrie ("Difficile")
 - Day 12 - Récursion pour la partie 1. Partie 2, non résolue.
 - Day 14 - Parcours d'arbre "avec des poids" (Intéressant, mais difficile si mauvaise direction. Partie 2 non résolue.)
+- Day 15 - Exploration de carte
 
 ## IntCode Computer
 
