@@ -34,5 +34,8 @@
 
 (def input (slurp "day16/input"))
 
-(solve input)
+(time (solve input))
 ;; 15841929
+;; 14 seconds !!!
+
+;; Patterns and signal's index range should be calculated only once
