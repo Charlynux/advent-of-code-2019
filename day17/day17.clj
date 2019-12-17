@@ -27,3 +27,26 @@
      (filter #(= 4 (count-scaffolds-neighbors %)))
      (map #(apply * %))
      (reduce +))
+
+;; vacuum robot visit every part of the scaffold at least once
+;; override its movement logic
+;; Force robot = address 0 from 1 to 2
+
+;; INPUT = ASCII ended with 10 (newline)
+
+;; main movement routine
+;; movements : A, B or C
+;; separated with commas (44)
+
+;; movement function
+;; L, R or move forward
+
+(defn draw-grid [view]
+  (let [maxX (reduce max (map ffirst view))
+        maxY (reduce max (map (comp second first) view))]
+    (doseq [y (range (inc maxY))]
+      (doseq [x (range (inc maxX))]
+        (print (get view [x y] ".")))
+      (println ""))))
+
+(draw-grid indexed-view)
