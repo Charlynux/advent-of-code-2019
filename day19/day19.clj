@@ -46,4 +46,19 @@
        (filter #{1})
        count))
 
-(solve)
+(time (solve))
+
+(defn simpler-part1 []
+  (let [program (intcode/init-program (intcode/read-input-file "day19/input"))]
+    (transduce
+     (comp
+      (map #(apply-coords program %))
+      (map read-status)
+      (filter #{1}))
+     (fn
+       ([] 0)
+       ([res] res)
+       ([res _] (inc res)))
+     (generate-coords))))
+
+(time (simpler-part1))
